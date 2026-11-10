@@ -47,11 +47,9 @@
     <script>
         vkBridge.send('VKWebAppInit');
         
-        // ВАЖНО: Ваши ID
-        const groupId = 243121235;    // ID сообщества
-        const appId = 54887057;       // ID мини-приложения
+        const groupId = 243121235;
+        const appId = 54887057;
 
-        // Функция для генерации кода виджета на основе данных из формы
         function generateWidgetCode() {
             const teamA = document.getElementById('teamA').value;
             const teamB = document.getElementById('teamB').value;
@@ -73,20 +71,17 @@
             };`;
         }
 
-        // Кнопка 1: Добавление в сообщество
         document.getElementById('addBtn').addEventListener('click', async () => {
             const statusDiv = document.getElementById('status');
             statusDiv.innerText = "⏳ Добавляем...";
             try {
                 await vkBridge.send('VKWebAppAddToCommunity');
-                statusDiv.innerText = "✅ Приложение успешно добавлено в сообщество!";
+                statusDiv.innerText = "✅ Приложение добавлено в сообщество!";
             } catch (e) {
-                console.error(e);
-                statusDiv.innerText = "⚠️ Ошибка добавления: " + (e.error_data?.error_reason || e.message);
+                statusDiv.innerText = "⚠️ " + (e.error_data?.error_reason || e.message);
             }
         });
 
-        // Кнопка 2: Показать предпросмотр (без сохранения)
         document.getElementById('showBtn').addEventListener('click', async () => {
             const statusDiv = document.getElementById('status');
             statusDiv.innerText = "⏳ Открываем предпросмотр...";
@@ -96,73 +91,51 @@
                     type: 'match',
                     code: generateWidgetCode()
                 });
-                statusDiv.innerText = "✅ Окно предпросмотра открыто.";
+                statusDiv.innerText = "✅ Предпросмотр открыт.";
             } catch (e) {
-                console.error(e);
-                statusDiv.innerText = "❌ Ошибка предпросмотра: " + (e.error_data?.error_reason || e.message);
+                statusDiv.innerText = "❌ " + (e.error_data?.error_reason || e.message);
             }
         });
 
-        // Кнопка 3: ОБНОВИТЬ ВИДЖЕТ В СООБЩЕСТВЕ (сохранение)
         document.getElementById('updateBtn').addEventListener('click', async () => {
             const statusDiv = document.getElementById('status');
             const updateBtn = document.getElementById('updateBtn');
             
-            statusDiv.innerText = "⏳ Запрашиваем права на обновление...";
+            statusDiv.innerText = "⏳ Запрашиваем токен...";
             updateBtn.disabled = true;
 
             try {
-                // 1. Получаем токен
                 const tokenData = await vkBridge.send('VKWebAppGetCommunityToken', {
-                    app_id: appId, 
+                    app_id: appId,
                     group_id: groupId,
                     scope: 'app_widget'
                 });
                 
                 const token = tokenData.access_token;
-                statusDiv.innerText = "⏳ Отправляем данные в ВК...";
+                statusDiv.innerText = "⏳ Обновляем виджет...";
 
-                // 2. Формируем запрос
-                const code = generateWidgetCode();
-                const params = new URLSearchParams();
-                params.append('access_token', token);
-                params.append('type', 'match');
-                params.append('code', code);
-                params.append('v', '5.199');
-
-                // 3. Отправляем запрос через ДРУГОЙ прокси (AllOrigins)
-                const targetUrl = 'https://api.vk.com/method/appWidgets.update';
-                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
-                
-                const response = await fetch(proxyUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: params.toString()
+                // Используем VKWebAppCallAPIMethod вместо fetch + прокси
+                const apiResult = await vkBridge.send('VKWebAppCallAPIMethod', {
+                    method: 'appWidgets.update',
+                    params: {
+                        access_token: token,
+                        type: 'match',
+                        code: generateWidgetCode(),
+                        v: '5.199'
+                    }
                 });
 
-                // 4. Проверяем, что вернул сервер
-                const textResponse = await response.text();
-                let result;
-                try {
-                    result = JSON.parse(textResponse);
-                } catch (e) {
-                    // Если пришел не JSON, выводим как есть (скорее всего, ошибка прокси)
-                    statusDiv.innerText = "❌ Ответ сервера (не JSON): " + textResponse;
-                    return;
-                }
+                console.log('Ответ API:', apiResult);
 
-                // 5. Обрабатываем ответ ВК
-                if (result.response === 1) {
-                    statusDiv.innerText = "✅ Виджет успешно обновлен в сообществе!";
-                } else if (result.error) {
-                    statusDiv.innerText = "❌ Ошибка ВК: " + result.error.error_msg + " (Код: " + result.error.error_code + ")";
+                if (apiResult.response === 1) {
+                    statusDiv.innerText = "✅ Виджет успешно обновлен!";
                 } else {
-                    statusDiv.innerText = "❓ Неизвестный ответ: " + JSON.stringify(result);
+                    statusDiv.innerText = "❓ Ответ: " + JSON.stringify(apiResult);
                 }
 
             } catch (error) {
                 console.error(error);
-                statusDiv.innerText = "❌ Ошибка сети/скрипта: " + (error.error_data?.error_reason || error.message);
+                statusDiv.innerText = "❌ Ошибка: " + (error.error_data?.error_reason || error.message);
             } finally {
                 setTimeout(() => { updateBtn.disabled = false; }, 3000);
             }
