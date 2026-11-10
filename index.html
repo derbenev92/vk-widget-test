@@ -25,10 +25,9 @@
 
     <script>
         // 2. Инициализируем VK Bridge (обязательно)
-        vkBridge.send('VKWebAppInit');
-
-        // ВАЖНО: ID вашего сообщества
-        const groupId = 243121235; 
+        vkBridge.send('VKWebAppInit');       
+        const groupId = 243121235;    // ВАЖНО: ID вашего сообщества
+        const appId = 54887057;       // ID мини-приложения (обязательно для токена)
 
         // Код виджета вынесен отдельно, чтобы его могли использовать обе кнопки
         const widgetCode = `return {
