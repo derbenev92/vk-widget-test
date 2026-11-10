@@ -8,26 +8,27 @@
     <style>
         body { font-family: sans-serif; padding: 20px; text-align: center; background-color: #f0f2f5; }
         .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        input { width: 90%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
-        .row { display: flex; justify-content: space-between; }
-        .row input { width: 45%; }
-        button { width: 100%; padding: 12px; font-size: 16px; margin-top: 15px; cursor: pointer; border: none; border-radius: 5px; }
+        input { width: 90%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; }
+        .row { display: flex; justify-content: space-between; gap: 10px; }
+        .row input { width: 48%; }
+        button { width: 100%; padding: 12px; font-size: 16px; margin-top: 15px; cursor: pointer; border: none; border-radius: 5px; transition: background 0.2s; }
         .btn-add { background-color: #e0e0e0; color: #333; }
         .btn-show { background-color: #4CAF50; color: white; }
         .btn-update { background-color: #2196F3; color: white; font-weight: bold; }
-        #status { margin-top: 15px; font-size: 14px; color: #666; }
+        .btn-update:disabled { background-color: #90CAF9; cursor: not-allowed; }
+        #status { margin-top: 15px; font-size: 14px; color: #666; min-height: 40px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Управление виджетом</h2>
         
-        <p style="font-size: 14px; color: #666;">Шаг 1: Добавьте приложение в сообщество</p>
+        <p style="font-size: 14px; color: #666; margin-bottom: 5px;">Шаг 1: Добавьте приложение в сообщество</p>
         <button id="addBtn" class="btn-add">Добавить в сообщество</button>
 
         <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
 
-        <p style="font-size: 14px; color: #666;">Шаг 2: Введите данные матча</p>
+        <p style="font-size: 14px; color: #666; margin-bottom: 5px;">Шаг 2: Введите данные матча</p>
         <input id="teamA" placeholder="Название команды А" value="Спарта">
         <input id="teamB" placeholder="Название команды Б" value="Феникс-Атлант">
         <div class="row">
@@ -46,8 +47,9 @@
     <script>
         vkBridge.send('VKWebAppInit');
         
-        // ВАЖНО: Ваш ID сообщества
-        const groupId = 243121235; 
+        // ВАЖНО: Ваши ID
+        const groupId = 243121235;    // ID сообщества
+        const appId = 54887057;       // ID мини-приложения (обязательно для токена)
 
         // Функция для генерации кода виджета на основе данных из формы
         function generateWidgetCode() {
@@ -57,6 +59,7 @@
             const scoreB = document.getElementById('scoreB').value;
             const state = document.getElementById('state').value;
 
+            // Генерируем JSON для виджета типа "match"
             return `return {
                 "title": "Матч дня",
                 "title_url": "https://vk.com/title_url",
@@ -73,35 +76,47 @@
 
         // Кнопка 1: Добавление в сообщество
         document.getElementById('addBtn').addEventListener('click', async () => {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "⏳ Добавляем...";
             try {
                 await vkBridge.send('VKWebAppAddToCommunity');
-                document.getElementById('status').innerText = "✅ Приложение успешно добавлено в сообщество!";
+                statusDiv.innerText = "✅ Приложение успешно добавлено в сообщество!";
             } catch (e) {
-                document.getElementById('status').innerText = "⚠️ Ошибка добавления (возможно, уже добавлено): " + e.error_data?.error_reason;
+                console.error(e);
+                statusDiv.innerText = "⚠️ Ошибка добавления (возможно, уже добавлено): " + (e.error_data?.error_reason || e.message);
             }
         });
 
         // Кнопка 2: Показать предпросмотр (без сохранения)
         document.getElementById('showBtn').addEventListener('click', async () => {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "⏳ Открываем предпросмотр...";
             try {
                 await vkBridge.send('VKWebAppShowCommunityWidgetPreviewBox', {
                     group_id: groupId,
                     type: 'match',
                     code: generateWidgetCode()
                 });
+                statusDiv.innerText = "✅ Окно предпросмотра открыто.";
             } catch (e) {
-                alert('Ошибка предпросмотра: ' + JSON.stringify(e));
+                console.error(e);
+                statusDiv.innerText = "❌ Ошибка предпросмотра: " + (e.error_data?.error_reason || e.message);
             }
         });
 
         // Кнопка 3: ОБНОВИТЬ ВИДЖЕТ В СООБЩЕСТВЕ (сохранение)
         document.getElementById('updateBtn').addEventListener('click', async () => {
             const statusDiv = document.getElementById('status');
+            const updateBtn = document.getElementById('updateBtn');
+            
             statusDiv.innerText = "⏳ Запрашиваем права на обновление...";
+            updateBtn.disabled = true; // Блокируем кнопку от двойных нажатий
 
             try {
                 // 1. Получаем токен администратора с правом app_widget
+                // Добавлен обязательный параметр app_id!
                 const tokenData = await vkBridge.send('VKWebAppGetCommunityToken', {
+                    app_id: appId, 
                     group_id: groupId,
                     scope: 'app_widget'
                 });
@@ -129,7 +144,7 @@
 
                 const result = await response.json();
 
-                // 4. Обрабатываем ответ
+                // 4. Обрабатываем ответ от ВК
                 if (result.response === 1) {
                     statusDiv.innerText = "✅ Виджет успешно обновлен в сообществе!";
                 } else if (result.error) {
@@ -141,6 +156,9 @@
             } catch (error) {
                 console.error(error);
                 statusDiv.innerText = "❌ Ошибка: " + (error.error_data?.error_reason || error.message);
+            } finally {
+                // Разблокируем кнопку через 3 секунды (защита от спама)
+                setTimeout(() => { updateBtn.disabled = false; }, 3000);
             }
         });
     </script>
