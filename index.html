@@ -3,81 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой Виджет</title>
-    <!-- 1. Подключаем библиотеку VK Bridge -->
+    <title>Управление виджетом</title>
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; text-align: center; }
-        button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
-        .btn-add { background-color: #e0e0e0; border: 1px solid #ccc; }
-        .btn-show { background-color: #4CAF50; color: white; border: none; }
+        body { font-family: sans-serif; padding: 20px; text-align: center; background-color: #f0f2f5; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input { width: 90%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        .row { display: flex; justify-content: space-between; }
+        .row input { width: 45%; }
+        button { width: 100%; padding: 12px; font-size: 16px; margin-top: 15px; cursor: pointer; border: none; border-radius: 5px; }
+        .btn-add { background-color: #e0e0e0; color: #333; }
+        .btn-show { background-color: #4CAF50; color: white; }
+        .btn-update { background-color: #2196F3; color: white; font-weight: bold; }
+        #status { margin-top: 15px; font-size: 14px; color: #666; }
     </style>
 </head>
 <body>
-    <h1>Тест виджета</h1>
-    <p>Шаг 1: Добавьте плагин. Шаг 2: Покажите виджет.</p>
-    
-    <!-- Две отдельные кнопки -->
-    <div>
-        <button id="addBtn" class="btn-add">1. Добавить в сообщество</button>
-        <button id="showBtn" class="btn-show">2. Показать виджет!!!</button>
+    <div class="container">
+        <h2>Управление виджетом</h2>
+        
+        <p style="font-size: 14px; color: #666;">Шаг 1: Добавьте приложение в сообщество</p>
+        <button id="addBtn" class="btn-add">Добавить в сообщество</button>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+        <p style="font-size: 14px; color: #666;">Шаг 2: Введите данные матча</p>
+        <input id="teamA" placeholder="Название команды А" value="Спарта">
+        <input id="teamB" placeholder="Название команды Б" value="Феникс-Атлант">
+        <div class="row">
+            <input id="scoreA" type="number" placeholder="Голы А" value="4">
+            <input id="scoreB" type="number" placeholder="Голы Б" value="3">
+        </div>
+        <input id="state" placeholder="Состояние матча" value="Завершён">
+
+        <button id="updateBtn" class="btn-update">Обновить виджет в сообществе</button>
+        
+        <button id="showBtn" class="btn-show" style="margin-top: 10px;">Показать предпросмотр</button>
+
+        <div id="status">Ожидание...</div>
     </div>
 
     <script>
-        // 2. Инициализируем VK Bridge (обязательно)
         vkBridge.send('VKWebAppInit');
+        
+        // ВАЖНО: Ваш ID сообщества
+        const groupId = 243121235; 
 
-        // ВАЖНО: ID вашего сообщества
-        const groupId = 41633375; 
+        // Функция для генерации кода виджета на основе данных из формы
+        function generateWidgetCode() {
+            const teamA = document.getElementById('teamA').value;
+            const teamB = document.getElementById('teamB').value;
+            const scoreA = document.getElementById('scoreA').value;
+            const scoreB = document.getElementById('scoreB').value;
+            const state = document.getElementById('state').value;
 
-        // Код виджета вынесен отдельно, чтобы его могли использовать обе кнопки
-        const widgetCode = `return {
-            "title": "Матч дня",
-            "title_url": "https://vk.com/title_url",
-            "title_counter": 1,
-            "match": {
-                "state": "Завершён",
-                "team_a": { "icon_id": "club243121235", "name": "Спарта", "descr": "1 место" },
-                "team_b": { "icon_id": "club236409532", "name": "Феникс-Атлант", "descr": "9 место" },
-                "score": { "team_a": 4, "team_b": 3 },
-                "events": {
-                    "team_a": [
-                        { "event": "⚽ Стёксов П.", "minute": 12 }
-                    ],
-                    "team_b": [
-                        { "event": "⚽ Орлов Р.", "minute": 3 }
-                    ]
-                }
-            },
-            "more": "Подробнее",
-            "more_url": "https://vk.ru/fcspartaaaaa?z=video-243121235_456239017"
-        };`;
+            return `return {
+                "title": "Матч дня",
+                "title_url": "https://vk.com/title_url",
+                "match": {
+                    "state": "${state}",
+                    "team_a": { "icon_id": "id243121235", "name": "${teamA}", "descr": "" },
+                    "team_b": { "icon_id": "id236409532", "name": "${teamB}", "descr": "" },
+                    "score": { "team_a": ${scoreA}, "team_b": ${scoreB} }
+                },
+                "more": "Подробнее",
+                "more_url": "https://vkvideo.ru/@fcspartaaaaa/playlists"
+            };`;
+        }
 
-        // Логика для кнопки 1: Добавление в сообщество
+        // Кнопка 1: Добавление в сообщество
         document.getElementById('addBtn').addEventListener('click', async () => {
             try {
-                const addResult = await vkBridge.send('VKWebAppAddToCommunity');
-                console.log('Плагин добавлен в сообщество:', addResult);
-                alert('Плагин успешно добавлен! Теперь нажмите кнопку 2.');
-            } catch (error) {
-                console.error('Ошибка добавления:', error);
-                // Если плагин уже добавлен, ВК может выдать ошибку User denied
-                alert('Возможно, плагин уже добавлен. Попробуйте нажать кнопку 2. Детали: ' + JSON.stringify(error));
+                await vkBridge.send('VKWebAppAddToCommunity');
+                document.getElementById('status').innerText = "✅ Приложение успешно добавлено в сообщество!";
+            } catch (e) {
+                document.getElementById('status').innerText = "⚠️ Ошибка добавления (возможно, уже добавлено): " + e.error_data?.error_reason;
             }
         });
 
-        // Логика для кнопки 2: Показ виджета
+        // Кнопка 2: Показать предпросмотр (без сохранения)
         document.getElementById('showBtn').addEventListener('click', async () => {
             try {
                 await vkBridge.send('VKWebAppShowCommunityWidgetPreviewBox', {
                     group_id: groupId,
                     type: 'match',
-                    code: widgetCode
+                    code: generateWidgetCode()
                 });
-                alert('Окно предпросмотра открыто!');
+            } catch (e) {
+                alert('Ошибка предпросмотра: ' + JSON.stringify(e));
+            }
+        });
+
+        // Кнопка 3: ОБНОВИТЬ ВИДЖЕТ В СООБЩЕСТВЕ (сохранение)
+        document.getElementById('updateBtn').addEventListener('click', async () => {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "⏳ Запрашиваем права на обновление...";
+
+            try {
+                // 1. Получаем токен администратора с правом app_widget
+                const tokenData = await vkBridge.send('VKWebAppGetCommunityToken', {
+                    group_id: groupId,
+                    scope: 'app_widget'
+                });
+                
+                const token = tokenData.access_token;
+                statusDiv.innerText = "⏳ Отправляем данные в ВК...";
+
+                // 2. Формируем запрос к API ВКонтакте
+                const code = generateWidgetCode();
+                const params = new URLSearchParams();
+                params.append('access_token', token);
+                params.append('type', 'match');
+                params.append('code', code);
+                params.append('v', '5.199');
+
+                // 3. Отправляем запрос через CORS-прокси (чтобы браузер не блокировал запрос)
+                const proxyUrl = 'https://corsproxy.io/?';
+                const targetUrl = 'https://api.vk.com/method/appWidgets.update';
+                
+                const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                });
+
+                const result = await response.json();
+
+                // 4. Обрабатываем ответ
+                if (result.response === 1) {
+                    statusDiv.innerText = "✅ Виджет успешно обновлен в сообществе!";
+                } else if (result.error) {
+                    statusDiv.innerText = "❌ Ошибка ВК: " + result.error.error_msg;
+                } else {
+                    statusDiv.innerText = "❓ Неизвестный ответ: " + JSON.stringify(result);
+                }
+
             } catch (error) {
-                console.error('Ошибка показа виджета:', error);
-                alert('Ошибка виджета: ' + JSON.stringify(error));
+                console.error(error);
+                statusDiv.innerText = "❌ Ошибка: " + (error.error_data?.error_reason || error.message);
             }
         });
     </script>
