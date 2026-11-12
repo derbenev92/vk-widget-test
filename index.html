@@ -28,29 +28,29 @@
         vkBridge.send('VKWebAppInit');
 
         // ВАЖНО: ID вашего сообщества
-        const groupId = 41633375; 
+        const groupId = 243121235; 
 
         // Код виджета вынесен отдельно, чтобы его могли использовать обе кнопки
         const widgetCode = `return {
-            "title": "Матч дня",
+            "title": "Ближайший матч",
             "title_url": "https://vk.com/title_url",
             "title_counter": 1,
             "match": {
-                "state": "Завершён",
-                "team_a": { "icon_id": "id243121235", "name": "Спарта", "descr": "1 место" },
-                "team_b": { "icon_id": "id236409532", "name": "Феникс-Атлант", "descr": "9 место" },
-                "score": { "team_a": 4, "team_b": 3 },
+                "state": "Старт в субботу 15:00",
+                "team_a": { "icon_id": "club243121235", "name": "Спарта", "descr": "3 место" },
+                "team_b": { "icon_id": "club242592961", "name": "Zavoz", "descr": "2 место" },
+                "score": { "team_a": 0, "team_b": 0 },
                 "events": {
                     "team_a": [
-                        { "event": "⚽ Стёксов П.", "minute": 12 }
+                        { "event": "", "minute":  }
                     ],
                     "team_b": [
-                        { "event": "⚽ Орлов Р.", "minute": 3 }
+                        { "event": "", "minute":  }
                     ]
                 }
             },
             "more": "Подробнее",
-            "more_url": "https://vkvideo.ru/@fcspartaaaaa/playlists"
+            "more_url": "https://vk.ru/penza_lfl_ru?z=photo-10677358_457576636%2Fac62859e5e70305de4"
         };`;
 
         // Логика для кнопки 1: Добавление в сообщество
