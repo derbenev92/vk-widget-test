@@ -22,8 +22,11 @@
     </div>
 
     <script>
-        vkBridge.send('VKWebAppInit');
-        const groupId = 243121235; 
+        vkBridge.send('VKWebAppInit').catch((error) => {
+            console.error('Ошибка инициализации VK Bridge:', error);
+        });
+
+        const groupId = 243121235;
 
         // ИСПРАВЛЕННЫЙ КОД ВИДЖЕТА
         const widgetCode = `return {
@@ -34,47 +37,46 @@
                 "state": "Суббота 15:00",
                 "team_a": { "icon_id": "club243121235", "name": "Спарта", "descr": "3 место" },
                 "team_b": { "icon_id": "club242592961", "name": "Zavoz", "descr": "2 место" },
-                "score": { "team_a": 0, "team_b": 0 }
+                "score": "0:0"
             },
             "events": {
-            "team_a": [
-                {
-                    "event": "⚽ Стёксов П. (👟Дербенёв А.)",
-                    "minute": 12
-                },
-                {
-                    "event": "⚽ Максин А. (👟Судаков М.)",
-                    "minute": 15
-                },
- {
-                    "event": "⚽ Мизинов К. (👟Кивалин Р.)",
-                    "minute": 15
-                },
-                {
-                    "event": "⚽ Мизинов К. (пен.)",
-                    "minute": 34
-                },
-{
-                    "event": "⭐ Мизинов Кирилл ",
-                    
-                }
-            ],
-            "team_b": [
-                {
-                    "event": "⚽Ирышков М. (👟Орлов Р.)",
-                    "minute": 1
-                },
-{
-                    "event": "⚽Орлов Р.",
-                    "minute": 3
-                },
-                {
-                    "event": "⚽Аблаев С. (👟Орлов Р.)",
-                    "minute": 22
-                }
-            ]
-        }
-    },            
+                "team_a": [
+                    {
+                        "event": "⚽ Стёксов П. (👟Дербенёв А.)",
+                        "minute": 12
+                    },
+                    {
+                        "event": "⚽ Максин А. (👟Судаков М.)",
+                        "minute": 15
+                    },
+                    {
+                        "event": "⚽ Мизинов К. (👟Кивалин Р.)",
+                        "minute": 15
+                    },
+                    {
+                        "event": "⚽ Мизинов К. (пен.)",
+                        "minute": 34
+                    },
+                    {
+                        "event": "⭐ Мизинов Кирилл",
+                        "minute": 90
+                    }
+                ],
+                "team_b": [
+                    {
+                        "event": "⚽Ирышков М. (👟Орлов Р.)",
+                        "minute": 1
+                    },
+                    {
+                        "event": "⚽Орлов Р.",
+                        "minute": 3
+                    },
+                    {
+                        "event": "⚽Аблаев С. (👟Орлов Р.)",
+                        "minute": 22
+                    }
+                ]
+            },
             "more": "Подробнее",
             "more_url": "https://vk.ru/penza_lfl_ru?z=video-10677358_456256500"
         };`;
