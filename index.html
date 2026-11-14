@@ -25,7 +25,6 @@
         vkBridge.send('VKWebAppInit');       
         const groupId = 243121235;
 
-        // ИСПРАВЛЕННЫЙ КОД ВИДЖЕТА
         const widgetCode = `return {
             "title": "Матч дня",
             "title_url": "https://vk.com/title_url",
@@ -33,61 +32,59 @@
             "match": {
                 "state": "Завершён",
                 "team_a": {
-                    "icon_id": "club243121235",
+                    "icon_id": "id243121235",
                     "name": "Спарта",
                     "descr": "3 место"
                 },
                 "team_b": {
-                    "icon_id": "club242592961",
+                    "icon_id": "id242592961",
                     "name": "Zavoz",
                     "descr": "2 место"
                 },
-               "score": {
-            "team_a": 8,
-            "team_b": 2
-        },
-        "events": {
-            "team_a": [
-                {
-                    "event": "⚽ Судаков М. ",
-                    "minute": 4
+                "score": {
+                    "team_a": 8,
+                    "team_b": 2
                 },
-                {
-                    "event": "⚽ Пучинников Д. (👟Максин А.)",
-                    "minute": 7, 21
-                },
- {
-                    "event": "⚽ Максин А. (👟Корзинкин И.)",
-                    "minute": 8, 39
-                },
-             
-                {
-                    "event": "⚽ Стёксов П. (👟Дербенёв А.)",
-                    "minute": 21
-                },
-                {
-                    "event": "⚽ Мизинов К. (👟Стёксов П.)",
-                    "minute": 21, 35
-                },                              
-{
-                    "event": "⭐ Пучинников Данила ",
-                    
+                "events": {
+                    "team_a": [
+                        {
+                            "event": "⚽ Судаков М.",
+                            "minute": 4
+                        },
+                        {
+                            "event": "⚽ Пучинников Д. (👟Максин А.)",
+                            "minute": 7
+                        },
+                        {
+                            "event": "⚽ Максин А. (👟Корзинкин И.)",
+                            "minute": 8
+                        },
+                        {
+                            "event": "⚽ Стёксов П. (👟Дербенёв А.)",
+                            "minute": 21
+                        },
+                        {
+                            "event": "⚽ Мизинов К. (👟Стёксов П.)",
+                            "minute": 21
+                        },
+                        {
+                            "event": "⭐ Пучинников Данила",
+                            "minute": 0
+                        }
+                    ],
+                    "team_b": [
+                        {
+                            "event": "⚽ Кузьмин И. (👟Абашин И.)",
+                            "minute": 28
+                        },
+                        {
+                            "event": "⚽ Абашин И. (👟Кузьмин И.)",
+                            "minute": 39
+                        }
+                    ]
                 }
-            ],
-            "team_b": [
-                {
-                    "event": "⚽Кузьмин И. (👟Абашин И.)",
-                    "minute": 28
-                },
-{
-                    "event": "⚽Абашин И. (👟Кузьмин И.)",
-                    "minute": 39
-                }
-            ]
-        }
-    },
-    "more": "Подробнее",
-
+            },
+            "more": "Подробнее",
             "more_url": "https://vkvideo.ru/@fcspartaaaaa/playlists"
         };`;
 
